@@ -13,10 +13,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        window = UIWindow(windowScene: windowScene)
+        
+        let tabBar = UITabBarController()
+        let simpleVC = SimpleNumbersViewController()
+        let fibonacciVC = FibonacciNumbersViewController()
+        simpleVC.tabBarItem = UITabBarItem(title: "Simple", image: UIImage(systemName: "list.number"), tag: 0)
+        fibonacciVC.tabBarItem = UITabBarItem(title: "Fibonacci", image: UIImage(systemName: "list.number"), tag: 1)
+        tabBar.viewControllers = [
+            UINavigationController(rootViewController: simpleVC),
+            UINavigationController(rootViewController: fibonacciVC)
+        ]
+        window?.rootViewController = tabBar
+        window?.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
