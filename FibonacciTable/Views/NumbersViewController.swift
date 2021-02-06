@@ -1,5 +1,5 @@
 //
-//  FibonacciNumbersViewController.swift
+//  ViewController.swift
 //  FibonacciTable
 //
 //  Created by Денис on 05.02.2021.
@@ -7,10 +7,10 @@
 
 import UIKit
 
-class FibonacciNumbersViewController: UIViewController {
+class NumbersViewController: UIViewController {
     
-    private var items = getFibbonaciNumbers(50)
-    private var loadMore = false
+    // MARK: - Properties
+    var viewModel: NumbersViewModelProtocol!
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -29,34 +29,15 @@ class FibonacciNumbersViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Fibonacci"
+        
+        title = viewModel.getTitle(for: tabBarItem.tag)
+        
         view.backgroundColor = .white
         NumberCollectionViewCell.register(collectionView)
         setupConstraits()
     }
     
-    static func getFibbonaciNumbers(_ n: Int) -> [Int] {
-        var sequence = [0, 1]
-        guard n > 1 else { return sequence}
-        for _ in 0...n - 2{
-            let first = sequence[sequence.count - 2]
-            let second = sequence.last!
-            sequence.append(first + second)
-        }
-        return sequence
-    }
-    
-    private func incrementFibonacciNumbers(_ array: inout[Int], n: Int) {
-        guard !array.isEmpty, n > 1 else { return }
-        for _ in 0...n - 2 {
-            let first = array[array.count - 2]
-            let second = array.last!
-            if second < Int.max / 2 {
-                array.append(second + first)
-            }
-        }
-    }
-    
+    // MARK: - Methods
     private func setupConstraits() {
         view.addSubview(collectionView)
         collectionView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
@@ -64,29 +45,19 @@ class FibonacciNumbersViewController: UIViewController {
         collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
     }
-    
-    private func startLoad() {
-        loadMore = true
-        DispatchQueue.main.asyncAfter(deadline: .now()) { [weak self] in
-            guard let strongSelf = self else { return }
-            strongSelf.incrementFibonacciNumbers(&strongSelf.items, n: 15)
-            strongSelf.loadMore = false
-            strongSelf.collectionView.reloadData()
-        }
-    }
 }
 
 // MARK: - UICollectionViewDelegate & UICollectionViewDataSource
-extension FibonacciNumbersViewController: UICollectionViewDelegate , UICollectionViewDataSource {
+extension NumbersViewController: UICollectionViewDelegate , UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        items.count
+        viewModel.numberForRow(for: tabBarItem.tag) ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = NumberCollectionViewCell.dequeue(collectionView, for: indexPath)
-        let number = items[indexPath.row]
-        cell.configure(with: number, at: indexPath)
+        let cellViewModel = viewModel.cellViewModel(for: tabBarItem.tag, at: indexPath)
+        cell.viewModel = cellViewModel
         return cell
     }
     
@@ -95,11 +66,14 @@ extension FibonacciNumbersViewController: UICollectionViewDelegate , UICollectio
         let contentHeight = scrollView.contentSize.height
         
         if offsetY > contentHeight - scrollView.frame.height {
-            if !loadMore {
-                startLoad()
+            if !viewModel.loadMore {
+                viewModel.startLoad(for: tabBarItem.tag) { [weak self] in
+                    guard let strongSelf = self else { return }
+                    DispatchQueue.main.async {
+                        strongSelf.collectionView.reloadData()
+                    }
+                }
             }
         }
     }
 }
-
-

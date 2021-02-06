@@ -17,12 +17,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let tabBar = UITabBarController()
-        let simpleVC = SimpleNumbersViewController()
-        let fibonacciVC = FibonacciNumbersViewController()
-        simpleVC.tabBarItem = UITabBarItem(title: "Simple", image: UIImage(systemName: "list.number"), tag: 0)
+        let primeVC = NumbersViewController()
+        let fibonacciVC = NumbersViewController()
+        let viewModel: NumbersViewModelProtocol = NumbersViewModel()
+        primeVC.viewModel = viewModel
+        fibonacciVC.viewModel = viewModel
+        
+        primeVC.tabBarItem = UITabBarItem(title: "Prime", image: UIImage(systemName: "list.number"), tag: 0)
         fibonacciVC.tabBarItem = UITabBarItem(title: "Fibonacci", image: UIImage(systemName: "list.number"), tag: 1)
         tabBar.viewControllers = [
-            UINavigationController(rootViewController: simpleVC),
+            UINavigationController(rootViewController: primeVC),
             UINavigationController(rootViewController: fibonacciVC)
         ]
         window?.rootViewController = tabBar
